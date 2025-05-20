@@ -12,7 +12,9 @@ class ShoppingCart {
     }
 
     setupEventListeners() {
+        // Update cart button click handlers for both desktop and mobile
         document.getElementById('cart-button').onclick = () => this.togglePanel();
+        document.getElementById('cart-button-mobile').onclick = () => this.togglePanel();
         document.getElementById('close-cart').onclick = () => this.togglePanel();
         document.getElementById('clear-cart').onclick = () => this.clearCart();
         document.getElementById('checkout-btn').onclick = () => this.checkout();
@@ -40,7 +42,18 @@ class ShoppingCart {
 
     togglePanel() {
         const panel = document.getElementById('cart-panel');
+        const buttonContainer = document.getElementById('cart-button-container');
+        
         panel.classList.toggle('translate-x-full');
+        
+        // Toggle cart button visibility
+        if (panel.classList.contains('translate-x-full')) {
+            buttonContainer.classList.remove('opacity-0');
+            buttonContainer.classList.remove('pointer-events-none');
+        } else {
+            buttonContainer.classList.add('opacity-0');
+            buttonContainer.classList.add('pointer-events-none');
+        }
     }
 
     addItem(product) {
@@ -87,9 +100,10 @@ class ShoppingCart {
     }
 
     updateCart() {
-        // Update count
+        // Update count for both desktop and mobile
         this.count = this.items.reduce((sum, item) => sum + item.quantity, 0);
         document.getElementById('cart-count').textContent = this.count;
+        document.getElementById('cart-count-mobile').textContent = this.count;
 
         // Update items display using template from HTML
         const cartItems = document.getElementById('cart-items');

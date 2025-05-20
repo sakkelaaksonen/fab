@@ -76,23 +76,65 @@ PALETTE: Main: amber. white,
             box-shadow: inset 0 0 0 1000px rgba(255, 255, 255, 0.5);
 
         }
+
+        section {
+            padding:10px
+        }
     </style>
 </head>
-<body class="bg-amber-50 text-gray-900">
-    <!-- Cart UI -->
-    <!-- Add overlay div -->
-    <div id="cart-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden"></div>
+<body class="bg-amber-50 text-gray-900 font-sans">
+    <!-- Add navigation menu right at the start of body -->
+    <nav class="sticky top-0 bg-lime-700 bg-opacity-95 shadow-lg z-40">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex-shrink-0">
+                    <a href="#" class="text-white text-xl font-bold">FAB</a>
+                </div>
+                <div class="hidden md:flex md:items-center md:space-x-8">
+                    <a href="#" class="text-white hover:text-amber-200 transition-colors">Home</a>
+                    <a href="#products" class="text-white hover:text-amber-200 transition-colors">Products</a>
+                    <a href="#about" class="text-white hover:text-amber-200 transition-colors">About</a>
+                    <a href="#contact" class="text-white hover:text-amber-200 transition-colors">Contact</a>
+                    <button id="cart-button" 
+                        class="text-white p-2 rounded flex items-center space-x-2 hover:text-amber-200 transition-colors">
+                        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        <span id="cart-count" class="bg-amber-200 text-lime-900 rounded-full px-2 py-1 text-xs">0</span>
+                    </button>
+                </div>
+                <!-- Mobile menu button -->
+                <div class="md:hidden flex items-center space-x-4">
+                    <button id="cart-button-mobile" 
+                        class="text-white p-2 rounded flex items-center space-x-2 hover:text-amber-200 transition-colors">
+                        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        <span id="cart-count-mobile" class="bg-amber-200 text-lime-900 rounded-full px-2 py-1 text-xs">0</span>
+                    </button>
+                    <button id="mobile-menu-button" class="text-white hover:text-amber-200">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <!-- Mobile menu -->
+            <div id="mobile-menu" class="hidden md:hidden pb-4">
+                <div class="flex flex-col space-y-3">
+                    <a href="#" class="text-white hover:text-amber-200 transition-colors">Home</a>
+                    <a href="#products" class="text-white hover:text-amber-200 transition-colors">Products</a>
+                    <a href="#about" class="text-white hover:text-amber-200 transition-colors">About</a>
+                    <a href="#contact" class="text-white hover:text-amber-200 transition-colors">Contact</a>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-    <div class="fixed top-0 right-0 m-4 z-50">
-        <button id="cart-button" 
-            class="bg-amber-900 text-white p-4 rounded-full shadow-lg flex items-center space-x-2 hover:bg-amber-800">
-            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
-            </svg>
-            <span id="cart-count" class="bg-lime-500 text-white rounded-full px-2 py-1 text-xs">0</span>
-        </button>
-    </div>
+    <!-- Cart UI -->
+
 
     <div id="cart-panel" 
         class="fixed top-0 right-0 h-full w-full md:w-96 bg-white shadow-lg transform translate-x-full 
@@ -126,10 +168,10 @@ PALETTE: Main: amber. white,
 
     <!-- Hero Section -->
     <section class="hero bg-center h-screen sepia-60" style="background-image: url('./bowl.gif'); background-size: 90%; background-repeat: repeat-x;">
-        <div class="container mx-auto text-center flex flex-col justify-center items-center h-full">
-            <h1 class="text-6xl font-bold mt-4 text-white text-shadow-lg bg-black bg-opacity-50 p-4 rounded">Welcome to FAB</h1>
-            <p class="text-2xl mt-2 text-white text-shadow-lg bg-black bg-opacity-50 p-4 rounded">Finest Benin Art and Design</p>
-            <a href="#products" class="mt-7 drop-shadow-lg border-4 border-double border-white text-white ps-16 pe-16 pt-8 pb-8 rounded-full text-xl group relative z-0 overflow-hidden overflow-x-hidden bg-orange-800">
+        <div class="container mx-auto text-center flex flex-col md:justify-center items-center h-full">
+            <h1 class="text-6xl font-bold mt-4 text-amber-950  md:bg-black md:text-lime-500 p-4 rounded">Welcome to FAB</h1>
+            <p class="text-2xl mt-2 text-lime-500 text-shadow-lg bg-black bg-opacity-25 p-4 rounded">Finest Benin Art and Design</p>
+            <a href="#products" class="mt-48 md:mt-8 drop-shadow-lg border-4 border-double border-white text-white ps-16 pe-16 pt-8 pb-8 rounded-full text-xl group relative z-0 overflow-hidden overflow-x-hidden bg-orange-800">
                 <span class="relative z-10">Shop Now</span>
                 <span class="absolute inset-0 overflow-hidden rounded-md">
                     <span class="absolute left-0 aspect-square w-full origin-center translate-x-full rounded-full bg-lime-700 transition-all duration-500 group-hover:-translate-x-0 group-hover:scale-150"></span>
@@ -139,7 +181,7 @@ PALETTE: Main: amber. white,
     </section>
 
     <!-- About Section -->
-    <section class="about bg-lime-700 py-8 border-b-24 border-t-24 border-red-900">
+    <section id="about" class="about bg-lime-700 py-8 border-b-24 border-t-24 border-red-900">
         <div class="container mx-auto text-center min-h-150">
             <!-- <img src="about-image.jpg" alt="About Us Image" class="mx-auto"> -->
             <h2 class="text-6xl font-bold mt-36 text-white text-shadow-lg">About Us</h2>
@@ -190,7 +232,7 @@ PALETTE: Main: amber. white,
     <footer class="footer bg-amber-950 text-white py-4 min-h-150" style="background-image: url('./pattern.png'); background-size: 5%; background-repeat: repeat-x;">
         <div class="container mx-auto text-center">
             <h2 class="text-4xl text-shadow-lg mt-36 mb-16 font-bold">Follow us on social media</h2>
-            <div class="flex justify-center space-x-16 mt-2">
+            <div class="flex justify-center space-x-8 md:space-x-16 mt-2">
                 <!-- Social media links -->
                 <a href="#" class="text-black text-xl icon-pocket relative overflow-hidden rounded-md bg-neutral-950 px-5 py-2.5 duration-300 [transition-timing-function:cubic-bezier(0.175,0.885,0.32,1.275)] hover:translate-y-1 hover:scale-x-110 hover:scale-y-90">
                     <span class="sr-only">Facebook</span>
@@ -209,5 +251,14 @@ PALETTE: Main: amber. white,
         </div>
     </footer>
 
+    <script>
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+    </script>
 </body>
 </html>
