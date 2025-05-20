@@ -29,10 +29,18 @@ class ShoppingCart {
                 });
             }
         });
+
+        // Close cart on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !document.getElementById('cart-panel').classList.contains('translate-x-full')) {
+                this.togglePanel();
+            }
+        });
     }
 
     togglePanel() {
-        document.getElementById('cart-panel').classList.toggle('translate-x-full');
+        const panel = document.getElementById('cart-panel');
+        panel.classList.toggle('translate-x-full');
     }
 
     addItem(product) {
