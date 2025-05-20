@@ -94,8 +94,32 @@ class ShoppingCart {
             alert('Your cart is empty');
             return;
         }
-        // Redirect to contact section
-        window.location.href = '#contact';
+
+        // Create email content
+        const subject = encodeURIComponent('Order');
+        
+        // Build the body text with explicit line breaks
+        let bodyText = 'Order Details:%0D%0A%0D%0A';
+        this.items.forEach(item => {
+            bodyText += encodeURIComponent('- ' + item.name) + '%0D%0A';
+            bodyText += encodeURIComponent('  Quantity: ' + item.quantity) + '%0D%0A';
+            if (item.price) {
+                bodyText += encodeURIComponent('  Price: €' + (item.price * item.quantity).toFixed(2)) + '%0D%0A';
+            }
+            bodyText += '%0D%0A';
+        });
+        bodyText += encodeURIComponent('Total: €' + this.total.toFixed(2));
+
+        // Create mailto link with encoded components
+        const mailtoLink = `mailto:contact@example.com?subject=${subject}&body=${bodyText}`;
+        
+        // For debugging
+        console.log('Mailto link:', mailtoLink);
+        
+        // Open email client
+        window.location.href = mailtoLink;
+        
+        // Close cart panel
         this.togglePanel();
     }
 
