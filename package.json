@@ -1,0 +1,22 @@
+{
+  "name": "fab",
+  "version": "1.0.0",
+  "description": "web shop proto",
+  "keywords": [
+    "ecommerce"
+  ],
+  "license": "ISC",
+  "author": "Sakari Laaksonen",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sakari-laaksonen/fab.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sakari-laaksonen/fab/issues"
+  }
+}
