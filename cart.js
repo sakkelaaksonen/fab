@@ -98,15 +98,39 @@ class ShoppingCart {
         });
         orderText += `Total: €${this.total.toFixed(2)}`;
 
-        // Copy to clipboard
+        // Create email content
+        const subject = encodeURIComponent('Order');
+        let bodyText = 'Order Details:%0D%0A%0D%0A';
+        this.items.forEach(item => {
+            bodyText += encodeURIComponent('- ' + item.name) + '%0D%0A';
+            bodyText += encodeURIComponent('  Quantity: ' + item.quantity) + '%0D%0A';
+            if (item.price) {
+                bodyText += encodeURIComponent('  Price: €' + (item.price * item.quantity).toFixed(2)) + '%0D%0A';
+            }
+            bodyText += '%0D%0A';
+        });
+        bodyText += encodeURIComponent('Total: €' + this.total.toFixed(2));
+
+        // Copy to clipboard first
         navigator.clipboard.writeText(orderText)
             .then(() => {
-                alert("Thanks for shopping!  I've copied your order to your clipboard - just paste it anywhere to send it to me. Can't wait to get started on it!");
+                alert("Thanks for shopping! I've copied your order to your clipboard - just paste it anywhere to send it to me. Can't wait to get started on it!");
+                
+                // Create and open mailto link
+                const mailtoLink = `mailto:contact@example.com?subject=${subject}&body=${bodyText}`;
+                window.location.href = mailtoLink;
+                
                 this.togglePanel();
             })
             .catch(err => {
                 console.error('Failed to copy cart contents:', err);
-                alert("Oops! Something went wrong while trying to copy your order. Mind trying again? If it keeps acting up, just take a screenshot instead!");
+                alert("Oops! Something went wrong while trying to copy your order. Opening email client instead!");
+                
+                // Fallback to just email if clipboard fails
+                const mailtoLink = `mailto:contact@example.com?subject=${subject}&body=${bodyText}`;
+                window.location.href = mailtoLink;
+                
+                this.togglePanel();
             });
     }
 
