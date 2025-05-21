@@ -42,17 +42,8 @@ class ShoppingCart {
 
     togglePanel() {
         const panel = document.getElementById('cart-panel');
-        const buttonContainer = document.getElementById('cart-button-container');
-        
-        panel.classList.toggle('translate-x-full');
-        
-        // Toggle cart button visibility
-        if (panel.classList.contains('translate-x-full')) {
-            buttonContainer.classList.remove('opacity-0');
-            buttonContainer.classList.remove('pointer-events-none');
-        } else {
-            buttonContainer.classList.add('opacity-0');
-            buttonContainer.classList.add('pointer-events-none');
+        if (panel) {
+            panel.classList.toggle('translate-x-full');
         }
     }
 
