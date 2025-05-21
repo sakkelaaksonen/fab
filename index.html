@@ -11,19 +11,18 @@ PALETTE: Main: amber. white,
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Webshop</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <script src=" https://cdn.jsdelivr.net/npm/mustache@4.2.0/mustache.min.js "></script>
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.2.0/mustache.min.js"></script>
     <script src="products.js"></script>
     <script src="cart.js"></script>
     <script id="productTemplate" type="x-tmpl-mustache">
         {{#products}}   
-        <div class="product-card bg-amber-100 p-4 rounded" data-price="{{price}}" data-id="{{id}}">
+        <div class="product-card bg-amber-100 p-4 rounded" data-product-id="{{id}}">
             <img src="{{image}}" alt="{{name}}" class="w-full">
             <h3 class="text-2xl font-bold mt-2 text-amber-900">{{name}}</h3>
             <p class="text-xl mt-1 text-slate-700">{{#price}}€{{/price}}{{price}}{{^price}}Ask for price{{/price}}</p>
             <p class="text-xl mt-1 text-slate-700 mb-10">{{description}}{{^description}}No description available{{/description}}</p>
             <p class="text-center mb-10">
-                <button data-add-to-cart="{{id}}" 
-                    class="hover:ring-2 hover:ring-white drop-shadow-lg hover:ring-offset-2 text-xl mt-1 text-white bg-lime-800 py-4 px-8 rounded-sm hover:bg-lime-500 transition-colors">
+                <button class="add-to-cart-btn hover:ring-2 hover:ring-white drop-shadow-lg hover:ring-offset-2 text-xl mt-1 text-white bg-lime-800 py-4 px-8 rounded-sm hover:bg-lime-500 transition-colors">
                     Add to Cart
                 </button>
             </p>
@@ -37,17 +36,24 @@ PALETTE: Main: amber. white,
             <img src="{{image}}" alt="{{name}}" class="w-16 h-16 object-cover rounded">
             <div class="flex-1">
                 <h3 class="font-bold">{{name}}</h3>
-                {{#price}}<p class="text-gray-600">€{{price}}</p>{{/price}}
-                {{^price}}<p class="text-gray-600">Price on request</p>{{/price}}
+                {{#price}}
+                <p class="text-gray-600">
+                    €{{price}} × {{quantity}} = €{{total}}
+                </p>
+                {{/price}}
+                {{^price}}
+                <p class="text-gray-600">Price on request</p>
+                {{/price}}
                 <div class="flex items-center space-x-2 mt-1">
-                    <button onclick="cart.updateQuantity('{{id}}', {{quantity}}, -1)" 
+                    <button data-action="update-quantity" data-product-id="{{id}}" data-change="-1"
                         class="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300">-</button>
                     <span>{{quantity}}</span>
-                    <button onclick="cart.updateQuantity('{{id}}', {{quantity}}, 1)" 
+                    <button data-action="update-quantity" data-product-id="{{id}}" data-change="1"
                         class="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300">+</button>
                 </div>
             </div>
-            <button onclick="cart.removeItem('{{id}}')" class="text-red-500 hover:text-red-700">
+            <button data-action="remove-item" data-product-id="{{id}}" 
+                class="text-red-500 hover:text-red-700">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                         d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
