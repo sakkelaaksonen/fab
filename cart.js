@@ -19,23 +19,11 @@ const CART_CONFIG = {
     },
     /** @type {Object} CSS classes */
     CLASSES: {
-        PRODUCT_CARD: 'product-card',
         TRANSLATE_FULL: 'translate-x-full'
-    },
-    /** @type {Object} Data attributes */
-    DATA_ATTRIBUTES: {
-        ADD_TO_CART: '[data-add-to-cart]',
-        PRODUCT_ID: 'data-id',
-        PRODUCT_PRICE: 'data-price'
     },
     /** @type {Object} Storage keys */
     STORAGE: {
         CART_ITEMS: 'cart'
-    },
-    /** @type {Object} Email configuration */
-    EMAIL: {
-        ADDRESS: 'contact@example.com',
-        SUBJECT: 'Order'
     },
     /** @type {Object} Currency formatting */
     CURRENCY: {
@@ -54,13 +42,27 @@ class ShoppingCart {
      * @description Initializes a new shopping cart instance
      */
     constructor() {
-        /** @type {Array<{id: string, name: string, price: number, quantity: number, image: string}>} */
+        /** @type {Array<{id: string, name: string, price: number|undefined, quantity: number, image: string}>} */
         this.items = [];
-        /** @type {number} */
-        this.total = 0;
-        /** @type {number} */
-        this.count = 0;
         this.init();
+    }
+
+    /**
+     * @description Get the total price of all items in the cart
+     * @returns {number}
+     */
+    get total() {
+        return this.items.reduce((sum, item) => {
+            return sum + (item.price ? item.price * item.quantity : 0);
+        }, 0);
+    }
+
+    /**
+     * @description Get the total number of items in the cart
+     * @returns {number}
+     */
+    get count() {
+        return this.items.reduce((sum, item) => sum + item.quantity, 0);
     }
 
     /**
@@ -77,14 +79,14 @@ class ShoppingCart {
      * @private
      */
     setupEventListeners() {
-        // Update cart button click handlers for both desktop and mobile
+        // Cart button handlers
         document.getElementById(CART_CONFIG.ELEMENTS.CART_BUTTON).onclick = () => this.togglePanel();
         document.getElementById(CART_CONFIG.ELEMENTS.CART_BUTTON_MOBILE).onclick = () => this.togglePanel();
         document.getElementById(CART_CONFIG.ELEMENTS.CLOSE_CART).onclick = () => this.togglePanel();
         document.getElementById(CART_CONFIG.ELEMENTS.CLEAR_CART).onclick = () => this.clearCart();
         document.getElementById(CART_CONFIG.ELEMENTS.CHECKOUT_BUTTON).onclick = () => this.checkout();
 
-        // Handle cart item actions using event delegation
+        // Cart item actions
         document.getElementById(CART_CONFIG.ELEMENTS.CART_ITEMS).addEventListener('click', (e) => {
             const button = e.target.closest('button[data-action]');
             if (!button) return;
@@ -106,7 +108,7 @@ class ShoppingCart {
             }
         });
 
-        // Initialize event listeners for new event-based add to cart
+        // Add to cart event
         document.addEventListener('cart:add', (event) => {
             const { product } = event.detail;
             this.addItem(product);
@@ -126,9 +128,15 @@ class ShoppingCart {
      */
     togglePanel() {
         const panel = document.getElementById(CART_CONFIG.ELEMENTS.CART_PANEL);
-        if (panel) {
-            panel.classList.toggle(CART_CONFIG.CLASSES.TRANSLATE_FULL);
+        const cartItems = document.getElementById(CART_CONFIG.ELEMENTS.CART_ITEMS);
+        const template = document.getElementById(CART_CONFIG.ELEMENTS.CART_TEMPLATE);
+        
+        if (!panel || !cartItems || !template) {
+            console.error('Required DOM elements not found');
+            return;
         }
+        
+        panel.classList.toggle(CART_CONFIG.CLASSES.TRANSLATE_FULL);
     }
 
     /**
@@ -141,21 +149,25 @@ class ShoppingCart {
      * @public
      */
     addItem(product) {
-        // Ensure we have a valid product object
-        if (!product) return;
+        if (!product || typeof product !== 'object') return;
+        if (!product.id || !product.name || !product.image) {
+            console.error('Invalid product data:', product);
+            return;
+        }
 
-        // Create a normalized product object
         const normalizedProduct = {
             ...product,
             id: String(product.id),
-            price: product.price ? parseFloat(product.price) : undefined
+            price: product.price ? Number(product.price) : undefined
         };
 
         const existingItem = this.items.find(item => item.id === normalizedProduct.id);
 
         if (existingItem) {
-            existingItem.quantity = (existingItem.quantity || 1) + 1;
+            // Simply increment by 1, no need to check for undefined since we always initialize with 1
+            existingItem.quantity += 1;
         } else {
+            // Initialize new items with quantity 1
             normalizedProduct.quantity = 1;
             this.items.push(normalizedProduct);
         }
@@ -181,15 +193,20 @@ class ShoppingCart {
      * @public
      */
     updateQuantity(productId, currentQty, change) {
+        if (typeof productId !== 'string' || typeof currentQty !== 'number' || typeof change !== 'number') {
+            console.error('Invalid arguments to updateQuantity');
+            return;
+        }
+
+        const item = this.items.find(item => item.id === productId);
+        if (!item) return;
+
         const newQty = currentQty + change;
         if (newQty <= 0) {
             this.removeItem(productId);
         } else {
-            const item = this.items.find(item => item.id === productId);
-            if (item) {
-                item.quantity = newQty;
-                this.updateCart();
-            }
+            item.quantity = newQty;
+            this.updateCart();
         }
     }
 
@@ -261,53 +278,58 @@ class ShoppingCart {
     }
 
     /**
-     * @description Updates the cart UI and localStorage with current cart state
      * @private
+     * @description Updates cart state and triggers UI update
      */
     updateCart() {
-        // Update count for both desktop and mobile
-        this.count = this.items.reduce((sum, item) => sum + item.quantity, 0);
+        // Update UI elements
         document.getElementById(CART_CONFIG.ELEMENTS.CART_COUNT).textContent = this.count;
         document.getElementById(CART_CONFIG.ELEMENTS.CART_COUNT_MOBILE).textContent = this.count;
+        document.getElementById(CART_CONFIG.ELEMENTS.CART_TOTAL).textContent = 
+            `${CART_CONFIG.CURRENCY.SYMBOL}${this.total.toFixed(CART_CONFIG.CURRENCY.DECIMALS)}`;
 
-        // Update items display using template from HTML
+        // Render items
         const cartItems = document.getElementById(CART_CONFIG.ELEMENTS.CART_ITEMS);
         const template = document.getElementById(CART_CONFIG.ELEMENTS.CART_TEMPLATE).innerHTML;
-
-        // Calculate total price for each item
         const itemsWithTotals = this.items.map(item => ({
             ...item,
             total: item.price ? (item.price * item.quantity).toFixed(2) : undefined
         }));
-
         cartItems.innerHTML = Mustache.render(template, { items: itemsWithTotals });
-
-        // Update total (only for items with prices)
-        this.total = this.items.reduce((sum, item) => {
-            return sum + (item.price ? item.price * item.quantity : 0);
-        }, 0);
-        
-        document.getElementById(CART_CONFIG.ELEMENTS.CART_TOTAL).textContent = 
-            `${CART_CONFIG.CURRENCY.SYMBOL}${this.total.toFixed(CART_CONFIG.CURRENCY.DECIMALS)}`;
 
         // Save to localStorage
         localStorage.setItem(CART_CONFIG.STORAGE.CART_ITEMS, JSON.stringify(this.items));
     }
 
     /**
-     * @description Loads saved cart items from localStorage
      * @private
+     * @description Loads saved cart items from localStorage
      */
     loadCart() {
-        const saved = localStorage.getItem(CART_CONFIG.STORAGE.CART_ITEMS);
-        if (saved) {
-            this.items = JSON.parse(saved);
-            this.updateCart();
+        try {
+            const saved = localStorage.getItem(CART_CONFIG.STORAGE.CART_ITEMS);
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (Array.isArray(parsed)) {
+                    this.items = parsed;
+                    this.updateCart();
+                }
+            }
+        } catch (error) {
+            console.error('Failed to load cart:', error);
+            this.items = [];
         }
     }
 }
 
 // Initialize cart when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
+const cartInit = () => {
     window.cart = new ShoppingCart();
-});
+    document.removeEventListener('DOMContentLoaded', cartInit);
+};
+document.addEventListener('DOMContentLoaded', cartInit);
+
+// Export for testing
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { ShoppingCart };
+}
