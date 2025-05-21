@@ -86,32 +86,28 @@ class ShoppingCart {
             return;
         }
 
-        // Create email content
-        const subject = encodeURIComponent('Order');
-        
-        // Build the body text with explicit line breaks
-        let bodyText = 'Order Details:%0D%0A%0D%0A';
+        // Build the text content
+        let orderText = 'Order Details:\n\n';
         this.items.forEach(item => {
-            bodyText += encodeURIComponent('- ' + item.name) + '%0D%0A';
-            bodyText += encodeURIComponent('  Quantity: ' + item.quantity) + '%0D%0A';
+            orderText += `- ${item.name}\n`;
+            orderText += `  Quantity: ${item.quantity}\n`;
             if (item.price) {
-                bodyText += encodeURIComponent('  Price: €' + (item.price * item.quantity).toFixed(2)) + '%0D%0A';
+                orderText += `  Price: €${(item.price * item.quantity).toFixed(2)}\n`;
             }
-            bodyText += '%0D%0A';
+            orderText += '\n';
         });
-        bodyText += encodeURIComponent('Total: €' + this.total.toFixed(2));
+        orderText += `Total: €${this.total.toFixed(2)}`;
 
-        // Create mailto link with encoded components
-        const mailtoLink = `mailto:contact@example.com?subject=${subject}&body=${bodyText}`;
-        
-        // For debugging
-        console.log('Mailto link:', mailtoLink);
-        
-        // Open email client
-        window.location.href = mailtoLink;
-        
-        // Close cart panel
-        this.togglePanel();
+        // Copy to clipboard
+        navigator.clipboard.writeText(orderText)
+            .then(() => {
+                alert("Thanks for shopping!  I've copied your order to your clipboard - just paste it anywhere to send it to me. Can't wait to get started on it!");
+                this.togglePanel();
+            })
+            .catch(err => {
+                console.error('Failed to copy cart contents:', err);
+                alert("Oops! Something went wrong while trying to copy your order. Mind trying again? If it keeps acting up, just take a screenshot instead!");
+            });
     }
 
     updateCart() {
