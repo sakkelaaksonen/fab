@@ -54,6 +54,29 @@ class ProductCard {
     ];
 
     /**
+     * Find a product by its ID
+     * @param {string} id - Product ID to find
+     * @returns {Product|undefined} Found product or undefined
+     */
+    static findProductById(id) {
+        return this.products.find(p => p.id === id);
+    }
+
+    /**
+     * Normalize product data for cart
+     * @param {Product} product - Product to normalize
+     * @returns {Product} Normalized product copy
+     */
+    static normalizeProduct(product) {
+        const normalized = JSON.parse(JSON.stringify(product));
+        normalized.id = String(normalized.id);
+        if (normalized.price) {
+            normalized.price = parseFloat(normalized.price);
+        }
+        return normalized;
+    }
+
+    /**
      * Initialize product cards and bind event handlers
      */
     static init() {
@@ -77,20 +100,15 @@ class ProductCard {
      * @param {string} productId - Product ID to add to cart
      */
     static addToCart(productId) {
-        const product = this.products.find(p => p.id === productId);
+        const product = this.findProductById(productId);
         
         if (!product) {
             console.error(`Product with ID ${productId} not found`);
             return;
         }
 
-        // Create a deep copy of the product object
-        const productCopy = JSON.parse(JSON.stringify(product));
-        
-        // Ensure price is a number
-        if (productCopy.price) {
-            productCopy.price = parseFloat(productCopy.price);
-        }
+        // Create a normalized copy of the product
+        const productCopy = this.normalizeProduct(product);
         
         // Dispatch custom event with product copy
         const event = new CustomEvent('cart:add', {
@@ -111,3 +129,8 @@ function start() {
 document.addEventListener('DOMContentLoaded', () => {
     start();
 });
+
+// Export for testing
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { ProductCard, start };
+}

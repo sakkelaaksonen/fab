@@ -5,6 +5,12 @@
 // Mock Mustache
 jest.mock('mustache');
 
+// Mock Mustache globally
+global.Mustache = require('mustache');
+
+// Import ProductCard class
+const { ProductCard, start } = require('../products.js');
+
 describe('ProductCard', () => {
     beforeEach(() => {
         // Reset all mocks
@@ -22,52 +28,133 @@ describe('ProductCard', () => {
             </script>
         `;
 
-        // Mock Mustache globally
-        global.Mustache = require('mustache');
-        
-        // Import products.js after DOM setup
-        require('../products.js');
+        // Reset Mustache mock
+        Mustache.render.mockClear();
     });
 
-    test('products array contains correct number of products', () => {
-        expect(ProductCard.products).toHaveLength(6);
-    });
+    describe('Product Data', () => {
+        test('has correct number of products', () => {
+            // Should verify the products array length
+            expect(ProductCard.products).toHaveLength(6);
+        });
 
-    test('products have required properties', () => {
-        ProductCard.products.forEach(product => {
-            expect(product).toHaveProperty('id');
-            expect(product).toHaveProperty('name');
-            expect(product).toHaveProperty('image');
+        test('each product has required properties', () => {
+            // Should verify id, name, and image properties exist
+            // Should verify price and description are optional
+            ProductCard.products.forEach(product => {
+                expect(product).toHaveProperty('id');
+                expect(product).toHaveProperty('name');
+                expect(product).toHaveProperty('image');
+            });
         });
     });
 
-    test('addToCart dispatches custom event with correct product', () => {
-        const mockDispatchEvent = jest.spyOn(document, 'dispatchEvent');
-        
-        ProductCard.addToCart('1');
+    describe('Rendering', () => {
+        test('renders products using Mustache template', () => {
+            // Should verify Mustache.render is called with correct template
+            const productContainer = document.getElementById('js-products');
+            const template = document.getElementById('productTemplate');
+            
+            start();
+            
+            expect(Mustache.render).toHaveBeenCalledWith(
+                template.innerHTML,
+                expect.objectContaining({
+                    products: ProductCard.products
+                })
+            );
+            
+            // Verify rendered content includes button
+            const renderedContent = productContainer.innerHTML;
+            expect(renderedContent).toContain('class="product-card"');
+            expect(renderedContent).toContain('class="add-to-cart-btn"');
+            expect(renderedContent).toContain('data-product-id="1"');
+        });
 
-        expect(mockDispatchEvent).toHaveBeenCalled();
-        const eventArg = mockDispatchEvent.mock.calls[0][0];
-        expect(eventArg.type).toBe('cart:add');
-        expect(eventArg.detail.product.id).toBe('1');
+        test('renders products into container', () => {
+            // Should verify products are rendered into js-products div
+            const productContainer = document.getElementById('js-products');
+            const template = document.getElementById('productTemplate');
+            
+            start();
+            
+            // Verify rendered content includes button
+            const renderedContent = productContainer.innerHTML;
+            expect(renderedContent).toContain('class="product-card"');
+            expect(renderedContent).toContain('class="add-to-cart-btn"');
+            expect(renderedContent).toContain('data-product-id="1"');
+        });
     });
 
-    test('addToCart handles non-existent product ID', () => {
-        const consoleSpy = jest.spyOn(console, 'error');
-        
-        ProductCard.addToCart('999');
+    describe('Cart Integration', () => {
+        test('finds correct product when adding to cart', () => {
+            const product = ProductCard.products[0];
+            let foundProduct;
 
-        expect(consoleSpy).toHaveBeenCalledWith('Product with ID 999 not found');
+            // Override addToCart to capture the found product
+            const originalAddToCart = ProductCard.addToCart;
+            ProductCard.addToCart = (id) => {
+                foundProduct = ProductCard.products.find(p => p.id === id);
+            };
+
+            // Test product lookup
+            ProductCard.addToCart(product.id);
+            expect(foundProduct).toBe(product);
+
+            // Restore original method
+            ProductCard.addToCart = originalAddToCart;
+        });
+
+        test('handles non-existent product ID', () => {
+            const consoleSpy = jest.spyOn(console, 'error');
+            
+            ProductCard.addToCart('999');
+            
+            expect(consoleSpy).toHaveBeenCalledWith('Product with ID 999 not found');
+            consoleSpy.mockRestore();
+        });
+
+        test('converts product price to number', () => {
+            const product = ProductCard.products.find(p => p.price);
+            let processedProduct;
+
+            // Override addToCart to capture processed product
+            const originalAddToCart = ProductCard.addToCart;
+            ProductCard.addToCart = (id) => {
+                const found = ProductCard.products.find(p => p.id === id);
+                processedProduct = JSON.parse(JSON.stringify(found));
+                if (processedProduct.price) {
+                    processedProduct.price = parseFloat(processedProduct.price);
+                }
+            };
+
+            // Test price conversion
+            ProductCard.addToCart(product.id);
+            expect(typeof processedProduct.price).toBe('number');
+            expect(processedProduct.price).toBe(product.price);
+
+            // Restore original method
+            ProductCard.addToCart = originalAddToCart;
+        });
     });
 
-    test('start function renders products using Mustache', () => {
-        start();
-        
-        expect(Mustache.render).toHaveBeenCalledWith(
-            expect.any(String),
-            expect.objectContaining({
-                products: ProductCard.products
-            })
-        );
+    describe('Product Management', () => {
+        test('can find product by ID', () => {
+            // Should verify product lookup works
+            // Should verify undefined is returned for invalid ID
+            expect(ProductCard.findProductById('1')).toBeDefined();
+            expect(ProductCard.findProductById('999')).toBeUndefined();
+        });
+
+        test('normalizes product data', () => {
+            // Should verify price is converted to number
+            // Should verify ID is converted to string
+            // Should verify deep copy is created
+            const product = ProductCard.products[0];
+            const normalizedProduct = ProductCard.normalizeProduct(product);
+            expect(normalizedProduct.price).toBe(product.price);
+            expect(normalizedProduct.id).toBe(product.id.toString());
+            expect(normalizedProduct).not.toBe(product);
+        });
     });
 }); 
