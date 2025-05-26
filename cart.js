@@ -55,17 +55,19 @@ class ShoppingCart {
         /** @type {Array<{id: string, name: string, price: number|undefined, quantity: number, image: string}>} */
         this.items = [];
         /** @type {Object} Customer information */
-        this.customerInfo = {
-            name: '',
-            email: '',
-            acceptedTos: false,
-            address: {
-                street: '',
-                city: '',
-                postal: '',
-                country: ''
-            }
+        this.customerInfo = this.createDefaultCustomerInfo();
+        this.elements = {
+            form: document.getElementById(CART_CONFIG.ELEMENTS.CHECKOUT_FORM),
+            nameField: document.getElementById(CART_CONFIG.ELEMENTS.CUSTOMER_NAME),
+            emailField: document.getElementById(CART_CONFIG.ELEMENTS.CUSTOMER_EMAIL),
+            tosField: document.getElementById(CART_CONFIG.ELEMENTS.ACCEPT_TOS),
+            submitButton: document.getElementById(CART_CONFIG.ELEMENTS.CHECKOUT_BUTTON),
+            streetField: document.getElementById(CART_CONFIG.ELEMENTS.ADDRESS_STREET),
+            cityField: document.getElementById(CART_CONFIG.ELEMENTS.ADDRESS_CITY),
+            postalField: document.getElementById(CART_CONFIG.ELEMENTS.ADDRESS_POSTAL),
+            countryField: document.getElementById(CART_CONFIG.ELEMENTS.ADDRESS_COUNTRY)
         };
+        this.cartTemplate = document.getElementById(CART_CONFIG.ELEMENTS.CART_TEMPLATE).innerHTML;
         this.init();
     }
 
@@ -103,17 +105,17 @@ class ShoppingCart {
      * @private
      */
     setupFormValidation() {
-        const form = document.getElementById(CART_CONFIG.ELEMENTS.CHECKOUT_FORM);
-        const nameField = document.getElementById(CART_CONFIG.ELEMENTS.CUSTOMER_NAME);
-        const emailField = document.getElementById(CART_CONFIG.ELEMENTS.CUSTOMER_EMAIL);
-        const tosField = document.getElementById(CART_CONFIG.ELEMENTS.ACCEPT_TOS);
-        const submitButton = document.getElementById(CART_CONFIG.ELEMENTS.CHECKOUT_BUTTON);
+        const form = this.elements.form;
+        const nameField = this.elements.nameField;
+        const emailField = this.elements.emailField;
+        const tosField = this.elements.tosField;
+        const submitButton = this.elements.submitButton;
         
         // Address fields
-        const streetField = document.getElementById(CART_CONFIG.ELEMENTS.ADDRESS_STREET);
-        const cityField = document.getElementById(CART_CONFIG.ELEMENTS.ADDRESS_CITY);
-        const postalField = document.getElementById(CART_CONFIG.ELEMENTS.ADDRESS_POSTAL);
-        const countryField = document.getElementById(CART_CONFIG.ELEMENTS.ADDRESS_COUNTRY);
+        const streetField = this.elements.streetField;
+        const cityField = this.elements.cityField;
+        const postalField = this.elements.postalField;
+        const countryField = this.elements.countryField;
 
         if (!form || !nameField || !emailField || !tosField || !submitButton ||
             !streetField || !cityField || !postalField || !countryField) {
@@ -174,8 +176,8 @@ class ShoppingCart {
      * @private
      */
     updateSubmitButtonState() {
-        const form = document.getElementById(CART_CONFIG.ELEMENTS.CHECKOUT_FORM);
-        const submitButton = document.getElementById(CART_CONFIG.ELEMENTS.CHECKOUT_BUTTON);
+        const form = this.elements.form;
+        const submitButton = this.elements.submitButton;
         
         if (!form || !submitButton) return;
 
@@ -185,14 +187,15 @@ class ShoppingCart {
         submitButton.disabled = !isFormValid || !hasItems;
         
         // Update button text based on state
-        const buttonText = submitButton.querySelector('.checkout-btn-text');
-        if (buttonText) {
+        const submitText = submitButton.querySelector('.checkout-btn-text');
+        const submitLoading = submitButton.querySelector('.checkout-btn-loading');
+        if (submitText) {
             if (!hasItems) {
-                buttonText.textContent = 'Cart is Empty';
+                submitText.textContent = 'Cart is Empty';
             } else if (!isFormValid) {
-                buttonText.textContent = 'Complete Form';
+                submitText.textContent = 'Complete Form';
             } else {
-                buttonText.textContent = 'Send Order';
+                submitText.textContent = 'Send Order';
             }
         }
     }
@@ -225,13 +228,13 @@ class ShoppingCart {
      * @private
      */
     validateForm() {
-        const nameField = document.getElementById(CART_CONFIG.ELEMENTS.CUSTOMER_NAME);
-        const emailField = document.getElementById(CART_CONFIG.ELEMENTS.CUSTOMER_EMAIL);
-        const tosField = document.getElementById(CART_CONFIG.ELEMENTS.ACCEPT_TOS);
-        const streetField = document.getElementById(CART_CONFIG.ELEMENTS.ADDRESS_STREET);
-        const cityField = document.getElementById(CART_CONFIG.ELEMENTS.ADDRESS_CITY);
-        const postalField = document.getElementById(CART_CONFIG.ELEMENTS.ADDRESS_POSTAL);
-        const countryField = document.getElementById(CART_CONFIG.ELEMENTS.ADDRESS_COUNTRY);
+        const nameField = this.elements.nameField;
+        const emailField = this.elements.emailField;
+        const tosField = this.elements.tosField;
+        const streetField = this.elements.streetField;
+        const cityField = this.elements.cityField;
+        const postalField = this.elements.postalField;
+        const countryField = this.elements.countryField;
 
         let isValid = true;
         const errors = [];
@@ -426,23 +429,13 @@ class ShoppingCart {
      */
     clearFormAndCart() {
         // Clear the form
-        const form = document.getElementById(CART_CONFIG.ELEMENTS.CHECKOUT_FORM);
+        const form = this.elements.form;
         if (form) {
             form.reset();
         }
 
         // Clear customer info
-        this.customerInfo = {
-            name: '',
-            email: '',
-            acceptedTos: false,
-            address: {
-                street: '',
-                city: '',
-                postal: '',
-                country: ''
-            }
-        };
+        this.customerInfo = this.createDefaultCustomerInfo();
 
         // Clear cart and close panel
         this.clearCart();
@@ -599,7 +592,7 @@ class ShoppingCart {
      */
     checkout() {
         // Trigger form validation by attempting to submit
-        const form = document.getElementById(CART_CONFIG.ELEMENTS.CHECKOUT_FORM);
+        const form = this.elements.form;
         if (form) {
             // Create a submit event to trigger HTML5 validation
             const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
@@ -627,12 +620,11 @@ class ShoppingCart {
 
         // Render items
         const cartItems = document.getElementById(CART_CONFIG.ELEMENTS.CART_ITEMS);
-        const template = document.getElementById(CART_CONFIG.ELEMENTS.CART_TEMPLATE).innerHTML;
         const itemsWithTotals = this.items.map(item => ({
             ...item,
             total: item.price ? (item.price * item.quantity).toFixed(2) : undefined
         }));
-        cartItems.innerHTML = Mustache.render(template, { items: itemsWithTotals });
+        cartItems.innerHTML = Mustache.render(this.cartTemplate, { items: itemsWithTotals });
 
         // Update checkout button state
         const proceedToCheckoutBtn = document.getElementById('proceed-to-checkout');
@@ -757,7 +749,7 @@ class ShoppingCart {
      * @private
      */
     submitOrder() {
-        const submitButton = document.getElementById(CART_CONFIG.ELEMENTS.CHECKOUT_BUTTON);
+        const submitButton = this.elements.submitButton;
         const submitText = submitButton.querySelector('.checkout-btn-text');
         const submitLoading = submitButton.querySelector('.checkout-btn-loading');
         const successMessage = document.getElementById('cart-success-message');
@@ -792,23 +784,13 @@ class ShoppingCart {
                 this.clearCart();
 
                 // Reset form
-                const form = document.getElementById(CART_CONFIG.ELEMENTS.CHECKOUT_FORM);
+                const form = this.elements.form;
                 if (form) {
                     form.reset();
                 }
 
                 // Reset customer info
-                this.customerInfo = {
-                    name: '',
-                    email: '',
-                    acceptedTos: false,
-                    address: {
-                        street: '',
-                        city: '',
-                        postal: '',
-                        country: ''
-                    }
-                };
+                this.customerInfo = this.createDefaultCustomerInfo();
 
                 // Switch back to cart view after successful order
                 setTimeout(() => {
@@ -966,6 +948,13 @@ class ShoppingCart {
         emailBody += `Please process this order and contact the customer for payment and delivery arrangements.\n`;
         
         return emailBody;
+    }
+
+    createDefaultCustomerInfo() {
+        return {
+            name: '', email: '', acceptedTos: false,
+            address: { street: '', city: '', postal: '', country: '' }
+        };
     }
 }
 
