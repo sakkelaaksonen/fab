@@ -56,6 +56,8 @@ class ShoppingCart {
         this.items = [];
         /** @type {Object} Customer information */
         this.customerInfo = this.createDefaultCustomerInfo();
+        /** @type {EmailService} Email service instance */
+        this.emailService = new EmailService();
         this.elements = {
             form: document.getElementById(CART_CONFIG.ELEMENTS.CHECKOUT_FORM),
             nameField: document.getElementById(CART_CONFIG.ELEMENTS.CUSTOMER_NAME),
@@ -714,35 +716,26 @@ class ShoppingCart {
      * @private
      */
     setActiveAccordion(section) {
-        const cartItemsAccordion = document.getElementById('cart-items-accordion');
-        const checkoutFormAccordion = document.getElementById('checkout-form-accordion');
-        const cartItemsContent = document.getElementById('cart-items-content');
-        const checkoutFormContent = document.getElementById('checkout-form-content');
-        const cartItemsChevron = document.getElementById('cart-items-chevron');
-        const checkoutFormChevron = document.getElementById('checkout-form-chevron');
-
-        // Only proceed if elements exist
-        if (!cartItemsAccordion || !checkoutFormAccordion) {
-            return;
-        }
-
-        if (section === 'cart-items') {
-            // Show cart items, hide checkout form
-            if (cartItemsAccordion) cartItemsAccordion.classList.add('active');
-            if (checkoutFormAccordion) checkoutFormAccordion.classList.remove('active');
-            if (cartItemsContent) cartItemsContent.classList.remove('hidden');
-            if (checkoutFormContent) checkoutFormContent.classList.add('hidden');
-            if (cartItemsChevron) cartItemsChevron.classList.add('rotate-180');
-            if (checkoutFormChevron) checkoutFormChevron.classList.remove('rotate-180');
-        } else if (section === 'checkout-form') {
-            // Show checkout form, hide cart items
-            if (cartItemsAccordion) cartItemsAccordion.classList.remove('active');
-            if (checkoutFormAccordion) checkoutFormAccordion.classList.add('active');
-            if (cartItemsContent) cartItemsContent.classList.add('hidden');
-            if (checkoutFormContent) checkoutFormContent.classList.remove('hidden');
-            if (cartItemsChevron) cartItemsChevron.classList.remove('rotate-180');
-            if (checkoutFormChevron) checkoutFormChevron.classList.add('rotate-180');
-        }
+        // Get all accordion sections
+        const accordions = document.querySelectorAll('[data-accordion]');
+        
+        accordions.forEach(accordion => {
+            const accordionId = accordion.dataset.accordion;
+            const content = document.getElementById(`${accordionId}-content`);
+            const chevron = document.getElementById(`${accordionId}-chevron`);
+            
+            if (accordionId === section) {
+                // Activate this section
+                accordion.classList.add('active');
+                if (content) content.classList.remove('hidden');
+                if (chevron) chevron.classList.add('rotate-180');
+            } else {
+                // Deactivate other sections
+                accordion.classList.remove('active');
+                if (content) content.classList.add('hidden');
+                if (chevron) chevron.classList.remove('rotate-180');
+            }
+        });
     }
 
     /**
@@ -768,8 +761,8 @@ class ShoppingCart {
             timestamp: new Date().toISOString()
         };
 
-        // Send email with order details
-        this.sendOrderEmail(orderData)
+        // Send email with order details using EmailService
+        this.emailService.sendOrderEmail(orderData)
             .then(() => {
                 // Reset button state
                 submitButton.disabled = false;
@@ -810,145 +803,6 @@ class ShoppingCart {
                 alert('Failed to send order. Please try again or contact us directly.');
                 console.error('Order submission failed:', error);
             });
-    }
-
-    /**
-     * @description Sends order details via email
-     * @param {Object} orderData - The order data to send
-     * @returns {Promise} Promise that resolves when email is sent
-     * @private
-     */
-    sendOrderEmail(orderData) {
-        return new Promise((resolve, reject) => {
-            // Create email content
-            const subject = `New Order from ${orderData.customer.name}`;
-            const body = this.formatOrderEmail(orderData);
-
-            // Create mailto link
-            const mailtoLink = `mailto:contact@example.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-
-            try {
-                // Copy email content to clipboard
-                this.copyToClipboard(body)
-                    .then(() => {
-                        // Show alert with confirmation
-                        const userConfirmed = confirm(
-                            'Order details have been copied to your clipboard!\n\n' +
-                            'Click OK to open your email client, or Cancel to handle manually.\n\n' +
-                            'You can paste the order details into any email application.'
-                        );
-
-                        if (userConfirmed) {
-                            // Open email client
-                            window.location.href = mailtoLink;
-                        }
-
-                        // Resolve after user interaction
-                        setTimeout(() => {
-                            resolve();
-                        }, 1000);
-                    })
-                    .catch(() => {
-                        // Fallback if clipboard fails - still show alert
-                        const userConfirmed = confirm(
-                            'Click OK to open your email client with the order details.\n\n' +
-                            'Note: Order details could not be copied to clipboard automatically.'
-                        );
-
-                        if (userConfirmed) {
-                            window.location.href = mailtoLink;
-                        }
-
-                        setTimeout(() => {
-                            resolve();
-                        }, 1000);
-                    });
-            } catch (error) {
-                reject(error);
-            }
-        });
-    }
-
-    /**
-     * @description Copies text to clipboard
-     * @param {string} text - Text to copy
-     * @returns {Promise} Promise that resolves when text is copied
-     * @private
-     */
-    copyToClipboard(text) {
-        return new Promise((resolve, reject) => {
-            // Modern clipboard API
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(text)
-                    .then(resolve)
-                    .catch(reject);
-            } else {
-                // Fallback for older browsers
-                try {
-                    const textArea = document.createElement('textarea');
-                    textArea.value = text;
-                    textArea.style.position = 'fixed';
-                    textArea.style.left = '-999999px';
-                    textArea.style.top = '-999999px';
-                    document.body.appendChild(textArea);
-                    textArea.focus();
-                    textArea.select();
-                    
-                    const successful = document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                    
-                    if (successful) {
-                        resolve();
-                    } else {
-                        reject(new Error('Copy command failed'));
-                    }
-                } catch (error) {
-                    reject(error);
-                }
-            }
-        });
-    }
-
-    /**
-     * @description Formats order data into email content
-     * @param {Object} orderData - The order data to format
-     * @returns {string} Formatted email body
-     * @private
-     */
-    formatOrderEmail(orderData) {
-        let emailBody = `New Order Details:\n\n`;
-        
-        // Customer information
-        emailBody += `Customer Information:\n`;
-        emailBody += `Name: ${orderData.customer.name}\n`;
-        emailBody += `Email: ${orderData.customer.email}\n\n`;
-        
-        // Address information
-        emailBody += `Shipping Address:\n`;
-        emailBody += `Street: ${orderData.customer.address.street}\n`;
-        emailBody += `City: ${orderData.customer.address.city}\n`;
-        emailBody += `Postal Code: ${orderData.customer.address.postal}\n`;
-        emailBody += `Country: ${orderData.customer.address.country}\n\n`;
-        
-        // Order items
-        emailBody += `Order Items:\n`;
-        orderData.items.forEach((item, index) => {
-            const itemTotal = item.price ? (item.price * item.quantity).toFixed(2) : 'N/A';
-            emailBody += `${index + 1}. ${item.name}\n`;
-            emailBody += `   Quantity: ${item.quantity}\n`;
-            emailBody += `   Price: €${item.price ? item.price.toFixed(2) : 'N/A'}\n`;
-            emailBody += `   Total: €${itemTotal}\n\n`;
-        });
-        
-        // Order total
-        emailBody += `Order Total: €${orderData.total.toFixed(2)}\n\n`;
-        
-        // Timestamp
-        emailBody += `Order Date: ${new Date(orderData.timestamp).toLocaleString()}\n\n`;
-        
-        emailBody += `Please process this order and contact the customer for payment and delivery arrangements.\n`;
-        
-        return emailBody;
     }
 
     createDefaultCustomerInfo() {
