@@ -1,7 +1,12 @@
-# fab
+# FAB Webshop
 fab webshop demo
 
 
-## Kinsta Instance
+
+## Github pages
+
+https://sakkelaaksonen.github.io/fab/
+
+## Kinsta Instance (DEPRECATED)
 
 https://fab-fulc4.kinsta.page
