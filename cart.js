@@ -67,7 +67,9 @@ class ShoppingCart {
             postalField: document.getElementById(CART_CONFIG.ELEMENTS.ADDRESS_POSTAL),
             countryField: document.getElementById(CART_CONFIG.ELEMENTS.ADDRESS_COUNTRY)
         };
-        this.cartTemplate = document.getElementById(CART_CONFIG.ELEMENTS.CART_TEMPLATE).innerHTML;
+        // Cache template (handle missing template gracefully)
+        const templateElement = document.getElementById(CART_CONFIG.ELEMENTS.CART_TEMPLATE);
+        this.cartTemplate = templateElement ? templateElement.innerHTML : '';
         this.init();
     }
 
@@ -443,37 +445,45 @@ class ShoppingCart {
     }
 
     /**
-     * @description Sets up all event listeners for cart functionality
+     * @description Sets up event listeners for cart functionality
      * @private
      */
     setupEventListeners() {
-        // Cart button handlers
-        document.getElementById(CART_CONFIG.ELEMENTS.CART_BUTTON).onclick = () => this.togglePanel();
-        document.getElementById(CART_CONFIG.ELEMENTS.CART_BUTTON_MOBILE).onclick = () => this.togglePanel();
-        document.getElementById(CART_CONFIG.ELEMENTS.CLOSE_CART).onclick = () => this.togglePanel();
-        document.getElementById(CART_CONFIG.ELEMENTS.CLEAR_CART).onclick = () => this.clearCart();
+        // Cart panel controls - add null checks
+        const cartButton = document.getElementById(CART_CONFIG.ELEMENTS.CART_BUTTON);
+        const cartButtonMobile = document.getElementById(CART_CONFIG.ELEMENTS.CART_BUTTON_MOBILE);
+        const closeCartButton = document.getElementById(CART_CONFIG.ELEMENTS.CLOSE_CART);
+        const clearCartButton = document.getElementById(CART_CONFIG.ELEMENTS.CLEAR_CART);
 
-        // Cart item actions
-        document.getElementById(CART_CONFIG.ELEMENTS.CART_ITEMS).addEventListener('click', (e) => {
-            const button = e.target.closest('button[data-action]');
-            if (!button) return;
+        if (cartButton) cartButton.onclick = () => this.togglePanel();
+        if (cartButtonMobile) cartButtonMobile.onclick = () => this.togglePanel();
+        if (closeCartButton) closeCartButton.onclick = () => this.togglePanel();
+        if (clearCartButton) clearCartButton.onclick = () => this.clearCart();
 
-            const action = button.dataset.action;
-            const productId = button.dataset.productId;
+        // Cart item actions - with null check
+        const cartItemsContainer = document.getElementById(CART_CONFIG.ELEMENTS.CART_ITEMS);
+        if (cartItemsContainer) {
+            cartItemsContainer.addEventListener('click', (e) => {
+                const button = e.target.closest('button[data-action]');
+                if (!button) return;
 
-            switch (action) {
-                case 'update-quantity':
-                    const change = parseInt(button.dataset.change, 10);
-                    const item = this.items.find(item => item.id === productId);
-                    if (item) {
-                        this.updateQuantity(productId, item.quantity, change);
-                    }
-                    break;
-                case 'remove-item':
-                    this.removeItem(productId);
-                    break;
-            }
-        });
+                const action = button.dataset.action;
+                const productId = button.dataset.productId;
+
+                switch (action) {
+                    case 'update-quantity':
+                        const change = parseInt(button.dataset.change, 10);
+                        const item = this.items.find(item => item.id === productId);
+                        if (item) {
+                            this.updateQuantity(productId, item.quantity, change);
+                        }
+                        break;
+                    case 'remove-item':
+                        this.removeItem(productId);
+                        break;
+                }
+            });
+        }
 
         // Add to cart event
         document.addEventListener('cart:add', (event) => {
@@ -481,9 +491,10 @@ class ShoppingCart {
             this.addItem(product);
         });
 
-        // Close cart on escape key
+        // Close cart on escape key - with null check
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && !document.getElementById(CART_CONFIG.ELEMENTS.CART_PANEL).classList.contains(CART_CONFIG.CLASSES.TRANSLATE_FULL)) {
+            const cartPanel = document.getElementById(CART_CONFIG.ELEMENTS.CART_PANEL);
+            if (e.key === 'Escape' && cartPanel && !cartPanel.classList.contains(CART_CONFIG.CLASSES.TRANSLATE_FULL)) {
                 this.togglePanel();
             }
         });
@@ -664,51 +675,45 @@ class ShoppingCart {
      * @private
      */
     setupAccordions() {
+        // Get accordion elements with null checks
         const cartItemsToggle = document.getElementById('cart-items-toggle');
         const checkoutFormToggle = document.getElementById('checkout-form-toggle');
-        const cartItemsAccordion = document.getElementById('cart-items-accordion');
-        const checkoutFormAccordion = document.getElementById('checkout-form-accordion');
-        const cartItemsContent = document.getElementById('cart-items-content');
-        const checkoutFormContent = document.getElementById('checkout-form-content');
         const proceedToCheckoutBtn = document.getElementById('proceed-to-checkout');
 
-        if (!cartItemsToggle || !checkoutFormToggle || !cartItemsContent || !checkoutFormContent ||
-            !cartItemsAccordion || !checkoutFormAccordion) {
-            console.error('Accordion elements not found');
-            return;
+        // Only set up event listeners if elements exist
+        if (cartItemsToggle) {
+            cartItemsToggle.addEventListener('click', () => {
+                this.setActiveAccordion('cart-items');
+            });
         }
 
-        // Set initial state - cart items open by default
-        this.setActiveAccordion('cart-items');
-
-        // Cart items accordion toggle
-        cartItemsToggle.addEventListener('click', () => {
-            this.setActiveAccordion('cart-items');
-        });
-
-        // Checkout form accordion toggle
-        checkoutFormToggle.addEventListener('click', () => {
-            this.setActiveAccordion('checkout-form');
-        });
-
-        // Proceed to checkout button
-        if (proceedToCheckoutBtn) {
-            proceedToCheckoutBtn.addEventListener('click', () => {
-                if (this.items.length === 0) {
-                    alert('Your cart is empty. Please add items before proceeding to checkout.');
-                    return;
-                }
+        if (checkoutFormToggle) {
+            checkoutFormToggle.addEventListener('click', () => {
                 this.setActiveAccordion('checkout-form');
             });
+        }
+
+        if (proceedToCheckoutBtn) {
+            proceedToCheckoutBtn.addEventListener('click', () => {
+                this.setActiveAccordion('checkout-form');
+            });
+        }
+
+        // Set initial state - only if accordion elements exist
+        const cartItemsAccordion = document.getElementById('cart-items-accordion');
+        const checkoutFormAccordion = document.getElementById('checkout-form-accordion');
+        
+        if (cartItemsAccordion && checkoutFormAccordion) {
+            this.setActiveAccordion('cart-items');
         }
     }
 
     /**
-     * @description Sets the active accordion and ensures only one is open
-     * @param {string} accordionName - Name of accordion to activate ('cart-items' or 'checkout-form')
+     * @description Sets the active accordion section
+     * @param {string} section - The section to activate ('cart-items' or 'checkout-form')
      * @private
      */
-    setActiveAccordion(accordionName) {
+    setActiveAccordion(section) {
         const cartItemsAccordion = document.getElementById('cart-items-accordion');
         const checkoutFormAccordion = document.getElementById('checkout-form-accordion');
         const cartItemsContent = document.getElementById('cart-items-content');
@@ -716,31 +721,27 @@ class ShoppingCart {
         const cartItemsChevron = document.getElementById('cart-items-chevron');
         const checkoutFormChevron = document.getElementById('checkout-form-chevron');
 
-        // Reset all accordions to inactive state
-        cartItemsAccordion.classList.remove('active');
-        cartItemsAccordion.classList.add('inactive');
-        checkoutFormAccordion.classList.remove('active');
-        checkoutFormAccordion.classList.add('inactive');
-        
-        // Hide all content
-        cartItemsContent.classList.add('hidden');
-        checkoutFormContent.classList.add('hidden');
-        
-        // Reset chevrons
-        cartItemsChevron.classList.remove('accordion-chevron-rotated');
-        checkoutFormChevron.classList.remove('accordion-chevron-rotated');
+        // Only proceed if elements exist
+        if (!cartItemsAccordion || !checkoutFormAccordion) {
+            return;
+        }
 
-        // Activate the selected accordion
-        if (accordionName === 'cart-items') {
-            cartItemsAccordion.classList.remove('inactive');
-            cartItemsAccordion.classList.add('active');
-            cartItemsContent.classList.remove('hidden');
-            cartItemsChevron.classList.add('accordion-chevron-rotated');
-        } else if (accordionName === 'checkout-form') {
-            checkoutFormAccordion.classList.remove('inactive');
-            checkoutFormAccordion.classList.add('active');
-            checkoutFormContent.classList.remove('hidden');
-            checkoutFormChevron.classList.add('accordion-chevron-rotated');
+        if (section === 'cart-items') {
+            // Show cart items, hide checkout form
+            if (cartItemsAccordion) cartItemsAccordion.classList.add('active');
+            if (checkoutFormAccordion) checkoutFormAccordion.classList.remove('active');
+            if (cartItemsContent) cartItemsContent.classList.remove('hidden');
+            if (checkoutFormContent) checkoutFormContent.classList.add('hidden');
+            if (cartItemsChevron) cartItemsChevron.classList.add('rotate-180');
+            if (checkoutFormChevron) checkoutFormChevron.classList.remove('rotate-180');
+        } else if (section === 'checkout-form') {
+            // Show checkout form, hide cart items
+            if (cartItemsAccordion) cartItemsAccordion.classList.remove('active');
+            if (checkoutFormAccordion) checkoutFormAccordion.classList.add('active');
+            if (cartItemsContent) cartItemsContent.classList.add('hidden');
+            if (checkoutFormContent) checkoutFormContent.classList.remove('hidden');
+            if (cartItemsChevron) cartItemsChevron.classList.remove('rotate-180');
+            if (checkoutFormChevron) checkoutFormChevron.classList.add('rotate-180');
         }
     }
 
