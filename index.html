@@ -516,11 +516,60 @@ PALETTE: Main: amber. white,
             position: relative;
             border: 2px solid #000000;
             border-radius: 0.5rem;
+            box-shadow: 0 1px 1px 1px rgba(0, 0, 0, 0.4);
+
         }
 
         .product-card:hover .product-image-container {
-            transform: scale(1.05);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            transform: scale(1.02);
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Navigation menu hover effects */
+        nav a {
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background-color:  rgba(205, 176, 103, 0.8);
+            transition: width 0.3s ease-in-out;
+        }
+
+        nav a::before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            right: 0;
+            width: 0;
+            height: 1px;
+            background-color: rgba(205, 176, 103, 0.8);
+            transition: width 0.3s ease-in-out 0.1s;
+        }
+
+        nav a:hover::after,
+        nav a.active::after {
+            width: 100%;
+        }
+
+        nav a:hover::before,
+        nav a.active::before {
+            width: 100%;
+        }
+
+        /* Active nav item styling */
+        nav a.active {
+            color: #fbbf24;
+        }
+
+        nav a.active::before {
+            transition-delay: 0s;
         }
     </style>
 </head>
@@ -534,9 +583,9 @@ PALETTE: Main: amber. white,
                     <a href="#" class="shop-name-gradient text-xl font-bold">Bav'Arts Collection</a>
                 </div>
                 <div class="hidden md:flex md:items-center md:space-x-8">
-                    <a href="#" class="text-white hover:text-amber-200 transition-colors">Home</a>
-                    <a href="#products" class="text-white hover:text-amber-200 transition-colors">Products</a>
+                    <a href="#home" class="text-white hover:text-amber-200 transition-colors">Home</a>
                     <a href="#about" class="text-white hover:text-amber-200 transition-colors">About</a>
+                    <a href="#products" class="text-white hover:text-amber-200 transition-colors">Products</a>
                     <a href="#contact" class="text-white hover:text-amber-200 transition-colors">Contact</a>
                     <button id="cart-button"
                         class="text-white p-2 rounded flex items-center space-x-2 hover:text-amber-200 transition-colors">
@@ -805,7 +854,7 @@ PALETTE: Main: amber. white,
     </div>
 
     <!-- Hero Section -->
-    <section class="px-2 hero bg-center h-screen sepia-60"
+    <section id="home" class="px-2 hero bg-center h-screen sepia-60"
         style="background-image: url('./assets/cover.jpg'); background-size: cover; background-repeat: no-repeat; background-position: center;">
         <div class="container mx-auto text-center flex flex-col md:justify-center items-center h-full">
             <h1 class="text-6xl font-bold mt-4 text-amber-950  md:bg-black md:text-lime-500 p-4 rounded">Bav'ArtS
@@ -832,9 +881,9 @@ PALETTE: Main: amber. white,
                 <!-- Polaroid Photo -->
                 <div class="polaroid-card flex-shrink-0">
                     <div class="polaroid-inner">
-                        <img src="assets/fidel.jpg" alt="Fidel - Beninese Visual Artist" class="polaroid-photo">
+                        <img src="assets/fidel.jpg" alt="Fidele - Beninese Visual Artist" class="polaroid-photo">
                         <div class="polaroid-caption">
-                            <p class="text-gray-800 text-sm font-handwriting">Fidel in his studio</p>
+                            <p class="text-gray-800 text-sm font-handwriting">Fidele in his studio</p>
                         </div>
                     </div>
                 </div>
@@ -951,6 +1000,50 @@ PALETTE: Main: amber. white,
 
         mobileMenuButton.addEventListener('click', () => {
             mobileMenu.classList.toggle('hidden');
+        });
+
+        /**
+         * Navigation active state management
+         */
+        document.addEventListener('DOMContentLoaded', function() {
+            const navLinks = document.querySelectorAll('nav a[href^="#"]');
+            const sections = document.querySelectorAll('section[id]');
+            
+            /**
+             * Update active navigation item based on current scroll position
+             */
+            function updateActiveNav() {
+                let current = '';
+                
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+                    if (window.scrollY >= (sectionTop - 200)) {
+                        current = section.getAttribute('id');
+                    }
+                });
+                
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === '#' + current) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+            
+            // Update on scroll
+            window.addEventListener('scroll', updateActiveNav);
+            
+            // Update on page load
+            updateActiveNav();
+            
+            // Handle click events for immediate feedback
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
         });
     </script>
 </body>

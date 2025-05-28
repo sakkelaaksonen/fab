@@ -1,3 +1,7 @@
+# Bav'ArtS Collection  webshop
+
+
+# LLM rules
 You are a senior Javascript developer.
 
 You are working on a webshop for a company that sells art and design.
@@ -6,6 +10,46 @@ The webshop is built with HTML, CSS and Javascript.
 
 Use JSDoc to document the code.
 
-Use Mustache.js to render the HTML.
+Mobile first layout
 
 Use Tailwind CSS to style the webshop.
+
+Use WGAC AAA accessibility guidelines.
+
+Use Benin flag colors and black and ligh amber (gold) for the webshop.
+
+Use Tailwind CSS 4 and Tailwind Client
+
+
+## Content plan
+
+Sections
+- Hero
+    - 1 image
+    - 1 headline
+    - 1 subheadline
+    - 1 cta button
+- About
+    - 1 image
+    - 1 headline
+    - 1 subheadline
+- Products
+    - 6 image cards with text and price
+- Contact
+    - instructions for purchase
+    - email, phone, address, bank account
+- Footer
+    - social media links
+    - copyright 
+
+
+
+
+
+## FUTURE GUIDES - Ask before appying
+
+Use Eleventy to build the webshop.
+
+Use Tailwind CSS 4 and Tailwind Client
+
+Use WGAC AAA accessibility guidelines
