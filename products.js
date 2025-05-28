@@ -13,43 +13,25 @@ class ProductCard {
      */
     static products = [
         {
-            name: "Product 1",
-            price: 100,
+            name: "Calabash Lamp 1",
+            price: 200,
             id: "1",
             description: "This is the first product",
-            image: "product1.jpg"
+            image: "assets/lamp1-night.jpg"
         },
         {
-            name: "Product 2",
+            name: "Calabash Lamp 2",
             price: 200,
             id: "2",
             description: "This is the second product",
-            image: "product2.jpg"
+            image: "assets/lamp2-day.jpg"
         },
         {
-            name: "Product 3",
-            price: 300,
+            name: "Calabash Lamp 3",
+            price: 200,
             id: "3",
             description: "This is the third product",
-            image: "product3.jpg"
-        },
-        {
-            name: "Product 4",
-            price: 400,
-            id: "4",
-            description: "This is the fourth product",
-            image: "product4.jpg"
-        },
-        {
-            name: "Product 5",
-            id: "5",
-            description: "This is the fifth product",
-            image: "product5.jpg"
-        },
-        {
-            name: "Product 6",
-            id: "6",
-            image: "product6.jpg"
+            image: "assets/lamp3-day.jpg"
         },
     ];
 
