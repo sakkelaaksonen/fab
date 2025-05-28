@@ -19,7 +19,9 @@ PALETTE: Main: amber. white,
     <script id="productTemplate" type="x-tmpl-mustache">
         {{#products}}   
         <div class="product-card bg-amber-100 p-4 rounded" data-product-id="{{id}}">
-            <img src="{{image}}" alt="{{name}}" class="w-full">
+            <div class="product-image-container w-full aspect-square bg-gray-200 rounded overflow-hidden relative mb-4">
+                <img src="{{image}}" alt="{{name}}" class="absolute inset-0 w-full h-full object-cover">
+            </div>
             <h3 class="text-2xl font-bold mt-2 text-amber-900">{{name}}</h3>
             <p class="text-xl mt-1 text-slate-700">{{#price}}€{{/price}}{{price}}{{^price}}Ask for price{{/price}}</p>
             <p class="text-xl mt-1 text-slate-700 mb-10">{{description}}{{^description}}No description available{{/description}}</p>
@@ -502,6 +504,23 @@ PALETTE: Main: amber. white,
 
         .hero-shop-button:hover {
             animation-duration: 30s;
+        }
+
+        /* Product card hover effects */
+        .product-card {
+            transition: all 0.3s ease;
+        }
+
+        .product-card .product-image-container {
+            transition: all 0.3s ease;
+            position: relative;
+            border: 2px solid #000000;
+            border-radius: 0.5rem;
+        }
+
+        .product-card:hover .product-image-container {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
         }
     </style>
 </head>
