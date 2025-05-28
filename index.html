@@ -10,7 +10,7 @@ PALETTE: Main: amber. white,
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bav'Arts Collection</title>
+    <title>Bav'ArtS Collection</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/mustache@4.2.0/mustache.min.js"></script>
     <script src="products.js"></script>
@@ -580,7 +580,7 @@ PALETTE: Main: amber. white,
         <div class="container mx-auto px-4">
             <div class="flex justify-between items-center h-16">
                 <div class="flex-shrink-0">
-                    <a href="#" class="shop-name-gradient text-xl font-bold">Bav'Arts Collection</a>
+                    <a href="#" class="shop-name-gradient text-xl font-bold">Bav'ArtS Collection</a>
                 </div>
                 <div class="hidden md:flex md:items-center md:space-x-8">
                     <a href="#home" class="text-white hover:text-amber-200 transition-colors">Home</a>
@@ -855,7 +855,7 @@ PALETTE: Main: amber. white,
 
     <!-- Hero Section -->
     <section id="home" class="px-2 hero bg-center h-screen sepia-60"
-        style="background-image: url('./assets/cover.jpg'); background-size: cover; background-repeat: no-repeat; background-position: center;">
+        style="background-attachment: fixed; background-image: url('./assets/cover.jpg'); background-size: cover; background-repeat: no-repeat; background-position: center;">
         <div class="container mx-auto text-center flex flex-col md:justify-center items-center h-full">
             <h1 class="text-6xl font-bold mt-4 text-amber-950  md:bg-black md:text-lime-500 p-4 rounded">Bav'ArtS
                 Collections</h1>
@@ -912,11 +912,17 @@ PALETTE: Main: amber. white,
     </section>
 
     <!-- Products Section -->
-    <section class="px-2 products bg-amber-200 py-36" id="products">
+    <section class="px-2 products bg-amber-200 py-36 relative" id="products" 
+        style="background-attachment: fixed; background-image: url('./assets/cover2.jpg'); background-size: cover; background-repeat: no-repeat; background-position: center;">
+        
+        <!-- Overlay for transparency -->
+        <div class="absolute inset-0 bg-amber-200 opacity-90"></div>
+        
+        <!-- Content with relative positioning to appear above overlay -->
+        <div class="relative z-10">
+            <h2 class="text-6xl font-bold text-center mt-24 mb-16 text-amber-950">Our Products</h2>
 
-        <h2 class="text-6xl font-bold text-center mt-24 mb-16 text-amber-950">Our Products</h1>
-
-            <div id="js-products" class="container  min-h-150 mx-auto grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div id="js-products" class="container min-h-150 mx-auto grid grid-cols-1 md:grid-cols-3 gap-4">
 
                 <div class="product-card bg-amber-100 p-4 rounded">
                     <img src="bowl.gif" alt="" class="w-full sepia-60" />
@@ -936,6 +942,7 @@ PALETTE: Main: amber. white,
 
                 <!-- End of product block -->
             </div>
+        </div>
     </section>
 
     <!-- Contact Section -->
